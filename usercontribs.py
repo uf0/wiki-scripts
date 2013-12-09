@@ -86,7 +86,7 @@ def main(argv):
 					if header in edit_type:
 						row.append('false')
 					elif header in added_field:
-						link = site_diff_link + 'title=' + result['title'] + '&diff=' + str(result['revid']) + '&oldid=prev'
+						link = site_diff_link + 'title=' + result['title'].encode("utf-8") + '&diff=' + str(result['revid']) + '&oldid=prev'
 						row.append(link)
 					else:
 						row.append('')
