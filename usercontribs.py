@@ -41,7 +41,9 @@ def main(argv):
 
 	data = csv.DictReader(open(inputfile, 'rb'), delimiter=separator, skipinitialspace=True)
 
-	site = 'http://' + language + '.wikipedia.org/w/api.php'
+	site_root = 'http://' + language + '.wikipedia.org/w/'
+	site_api = site_root + 'api.php'
+	site_diff_link = site_root + 'index.php?'
 
 	query_params = {}
 	query_params['action'] = 'query'
@@ -51,7 +53,12 @@ def main(argv):
 	query_params['format'] = 'json'
 
 	writer = csv.writer(open(outputfile, 'wb'), delimiter='\t', quotechar='"')
-	headers = None
+
+	# NOTE: headers are hardcoded because of not well formatted API response. see there -> http://www.mediawiki.org/wiki/API:Usercontribs
+	headers = ['revid','timestamp','user','userid','parentid','title','pageid','ns','size','new','minor','bot','top','link','comment']
+	edit_type = ['new','minor','bot','top']
+	added_field = ['link']
+	writer.writerow(headers)
 
 	data = list(data)
 	total = len(data)
@@ -62,19 +69,30 @@ def main(argv):
 		sys.stdout.flush()
 		query_params['ucuser'] = user
 		
-		r = requests.get(site, params = query_params)
+		r = requests.get(site_api, params = query_params)
 		results = r.json()['query']['usercontribs']
 		for result in results:
-			if not headers:
-				headers = result.keys()
-				writer.writerow(headers)
 			row = []
 			for header in headers:
-				if isinstance(result[header], int):
-					row.append(result[header])
-				else:
-					row.append(result[header].encode("utf-8"))
+				try:
+					if isinstance(result[header], int):
+						row.append(result[header])
+					else:
+						if header in edit_type:
+							row.append('true')
+						else:
+							row.append(result[header].encode("utf-8"))
+				except:
+					if header in edit_type:
+						row.append('false')
+					elif header in added_field:
+						link = site_diff_link + 'title=' + result['title'] + '&diff=' + str(result['revid']) + '&oldid=prev'
+						row.append(link)
+					else:
+						row.append('')
+			
 			writer.writerow(row)
+	
 	sys.stdout.write('\x1b[2K\r')
 	sys.stdout.flush()
 	sys.exit()
