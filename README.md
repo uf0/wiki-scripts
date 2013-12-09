@@ -1,7 +1,7 @@
 wiki-scripts
 ============
 
-various script to get wikipedia data
+Various scripts to get wikipedia data
 
 ##Installation
 Install virtualenv:
