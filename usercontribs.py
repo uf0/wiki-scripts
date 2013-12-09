@@ -77,6 +77,7 @@ def main(argv):
 			writer.writerow(row)
 	sys.stdout.write('\x1b[2K\r')
 	sys.stdout.flush()
+	sys.exit()
 
 if __name__ == "__main__":
    main(sys.argv[1:])
